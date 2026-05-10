@@ -26,11 +26,11 @@ await sendcore.emails.send({
 
 ## Features
 
-- ✅ **Zero dependencies** — uses native `fetch` (Node 18+)
-- ✅ **Full TypeScript support** — complete type definitions included
-- ✅ **Automatic retries** — exponential backoff on 5xx errors
-- ✅ **Configurable timeouts** — prevent hanging requests
-- ✅ **Secure by default** — API key via `x-api-key` header
+- **Zero dependencies** — uses native `fetch` (Node 18+)
+- **Full TypeScript support** — complete type definitions included
+- **Automatic retries** — exponential backoff on 5xx errors
+- **Configurable timeouts** — prevent hanging requests
+- **Secure by default** — API key via `x-api-key` header
 
 ---
 
