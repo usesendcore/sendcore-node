@@ -1,6 +1,6 @@
 {
   "name": "sendcore",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official Node.js SDK for the SendCore email delivery platform",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -39,7 +39,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/elastodev/sendcore-node"
+    "url": "git+https://github.com/elastodev/sendcore-node.git"
   },
   "engines": {
     "node": ">=18.0.0"
