@@ -44,7 +44,7 @@ var DEFAULT_BASE_URL = "https://api.usesendcore.com";
 var DEFAULT_TIMEOUT = 3e4;
 var DEFAULT_RETRIES = 2;
 var RETRYABLE_STATUS_CODES = /* @__PURE__ */ new Set([408, 429, 500, 502, 503, 504]);
-var SDK_VERSION = "1.0.1";
+var SDK_VERSION = "1.0.0";
 var SendCore = class {
   apiKey;
   baseUrl;
