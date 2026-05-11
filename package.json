@@ -1,6 +1,6 @@
 {
   "name": "sendcore",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Official Node.js SDK for the SendCore email delivery platform",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
