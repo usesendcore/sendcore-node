@@ -11,7 +11,7 @@ const DEFAULT_BASE_URL = 'https://api.usesendcore.com';
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 2;
 const RETRYABLE_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504]);
-const SDK_VERSION = '1.0.1';
+const SDK_VERSION = '1.0.0';
 
 /**
  * SendCore — Official Node.js SDK
