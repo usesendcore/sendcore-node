@@ -1,6 +1,6 @@
 # SendCore Node.js SDK
 
-The official Node.js SDK for [SendCore](https://sendcore.elasto.ng) — reliable email infrastructure for developers and businesses.
+The official Node.js SDK for [SendCore](https://usesendcore.com) — reliable email infrastructure for developers and businesses.
 
 ## Installation
 
@@ -45,13 +45,13 @@ const sendcore = new SendCore('sc_live_xxxxxxxxxx');
 // Advanced — full configuration
 const sendcore = new SendCore({
   apiKey: 'sc_live_xxxxxxxxxx',
-  baseUrl: 'https://api.sendcore.elasto.ng',  // optional
+  baseUrl: 'https://api.usesendcore.com',  // optional
   timeout: 30000,                              // optional, ms
   retries: 2,                                  // optional
 });
 ```
 
-Get your API key from the [SendCore Dashboard](https://sendcore.elasto.ng/dashboard/api-keys).
+Get your API key from the [SendCore Dashboard](https://usesendcore.com/dashboard/api-keys).
 
 ---
 

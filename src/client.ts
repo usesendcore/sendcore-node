@@ -7,7 +7,7 @@ import type {
 } from './types';
 import { SendCoreError } from './errors';
 
-const DEFAULT_BASE_URL = 'https://api.sendcore.elasto.ng';
+const DEFAULT_BASE_URL = 'https://api.usesendcore.com';
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_RETRIES = 2;
 const RETRYABLE_STATUS_CODES = new Set([408, 429, 500, 502, 503, 504]);
@@ -49,7 +49,7 @@ export class SendCore {
 
     if (!config.apiKey) {
       throw new Error(
-        'SendCore: An API key is required. Get one at https://sendcore.elasto.ng/dashboard/api-keys'
+        'SendCore: An API key is required. Get one at https://usesendcore.com/dashboard/api-keys'
       );
     }
 

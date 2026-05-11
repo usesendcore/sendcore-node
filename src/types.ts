@@ -6,7 +6,7 @@
 export interface SendCoreConfig {
   /** Your API key from the SendCore dashboard */
   apiKey: string;
-  /** Base URL of the SendCore API (default: https://api.sendcore.elasto.ng) */
+  /** Base URL of the SendCore API (default: https://api.usesendcore.com) */
   baseUrl?: string;
   /** Request timeout in milliseconds (default: 30000) */
   timeout?: number;

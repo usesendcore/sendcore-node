@@ -40,7 +40,7 @@ var SendCoreError = class _SendCoreError extends Error {
 };
 
 // src/client.ts
-var DEFAULT_BASE_URL = "https://api.sendcore.elasto.ng";
+var DEFAULT_BASE_URL = "https://api.usesendcore.com";
 var DEFAULT_TIMEOUT = 3e4;
 var DEFAULT_RETRIES = 2;
 var RETRYABLE_STATUS_CODES = /* @__PURE__ */ new Set([408, 429, 500, 502, 503, 504]);
@@ -58,7 +58,7 @@ var SendCore = class {
     const config = typeof apiKeyOrConfig === "string" ? { apiKey: apiKeyOrConfig } : apiKeyOrConfig;
     if (!config.apiKey) {
       throw new Error(
-        "SendCore: An API key is required. Get one at https://sendcore.elasto.ng/dashboard/api-keys"
+        "SendCore: An API key is required. Get one at https://usesendcore.com/dashboard/api-keys"
       );
     }
     this.apiKey = config.apiKey;
