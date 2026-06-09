@@ -1,88 +1,196 @@
-// ─────────────────────────────────────────────
-// SendCore Node.js SDK — Type Definitions
-// ─────────────────────────────────────────────
-
-/** Configuration for the SendCore client */
 export interface SendCoreConfig {
-  /** Your API key from the SendCore dashboard */
   apiKey: string;
-  /** Base URL of the SendCore API (default: https://api.usesendcore.com) */
   baseUrl?: string;
-  /** Request timeout in milliseconds (default: 30000) */
   timeout?: number;
-  /** Number of automatic retries on 5xx errors (default: 2) */
   retries?: number;
 }
 
-// ─── Email Types ────────────────────────────
-
 export interface EmailAttachment {
-  /** Filename of the attachment */
   filename: string;
-  /** Base64-encoded content of the file */
   content: string;
-  /** MIME content type (e.g. 'application/pdf') */
   contentType?: string;
 }
 
 export interface SendEmailParams {
-  /** Sender address (e.g. 'John <john@example.com>') */
   from: string;
-  /** One or more recipient email addresses */
   to: string | string[];
-  /** Email subject line */
   subject?: string;
-  /** HTML body of the email */
   html?: string;
-  /** Plain text body of the email */
   text?: string;
-  /** CC recipients */
   cc?: string | string[];
-  /** BCC recipients */
   bcc?: string | string[];
-  /** Reply-to addresses */
   replyTo?: string | string[];
-  /** Use a pre-built template by its ID */
   templateId?: string;
-  /** Variables to inject into the template */
   templateData?: Record<string, any>;
-  /** File attachments */
   attachments?: EmailAttachment[];
-  /** Custom tags for tracking and analytics */
   tags?: Record<string, string>;
 }
 
 export interface SendEmailResponse {
   id: string;
-  message: string;
-  [key: string]: any;
+  status: string;
 }
 
-// ─── Audience / Contact Types ───────────────
-
 export interface SubscribeParams {
-  /** Email address of the contact */
   email: string;
-  /** First name */
   firstName?: string;
-  /** Last name */
   lastName?: string;
-  /** ID of the audience list to add the contact to */
   listId?: string;
-  /** Any additional custom data */
   customData?: Record<string, any>;
 }
 
 export interface UnsubscribeParams {
-  /** Email address to unsubscribe */
   email: string;
 }
-
-// ─── Error Types ────────────────────────────
 
 export interface SendCoreErrorDetail {
   statusCode: number;
   message: string;
   error?: string;
-  [key: string]: any;
+}
+
+export interface AddDomainParams {
+  name: string;
+}
+
+export interface Domain {
+  id: string;
+  name: string;
+  status: 'PENDING' | 'VERIFIED' | 'FAILED';
+  spfStatus: boolean;
+  dkimStatus: boolean;
+  dmarcStatus: boolean;
+  verificationToken: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DnsRecord {
+  type: string;
+  name: string;
+  value: string;
+  priority?: number;
+}
+
+export interface VerifyEmailParams {
+  email: string;
+}
+
+export interface VerificationResult {
+  email: string;
+  isValid: boolean;
+  score: number;
+  reason: string;
+}
+
+export interface BatchVerifyParams {
+  emails: string[];
+}
+
+export interface AnalyticsParams {
+  days?: number;
+}
+
+export interface AnalyticsData {
+  data: any[];
+}
+
+export interface WebhookPayload {
+  event: string;
+  data: Record<string, any>;
+  timestamp: number;
+}
+
+export interface EmailBuilderParams {
+  from?: string;
+  to?: string | string[];
+  subject?: string;
+  html?: string;
+  text?: string;
+  cc?: string | string[];
+  bcc?: string | string[];
+  replyTo?: string | string[];
+  attachments?: EmailAttachment[];
+  tags?: Record<string, string>;
+}
+
+// ─── Workflow Types ──────────────────────────
+
+export interface WorkflowStepConfig {
+  to?: string;
+  from?: string;
+  subject?: string;
+  html?: string;
+  templateSlug?: string;
+  templateData?: Record<string, any>;
+  duration?: number;
+  unit?: string;
+  field?: string;
+  operator?: string;
+  value?: string;
+  prompt?: string;
+  listId?: string;
+  fields?: Record<string, any>;
+  url?: string;
+  body?: Record<string, any>;
+}
+
+export interface WorkflowStep {
+  id: string;
+  order: number;
+  type: string;
+  config: WorkflowStepConfig;
+  label?: string;
+  parentStepId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Workflow {
+  id: string;
+  name: string;
+  description?: string;
+  triggerType: string;
+  triggerConfig: Record<string, any>;
+  status: 'DRAFT' | 'ACTIVE' | 'PAUSED';
+  aiGenerated: boolean;
+  executionCount: number;
+  steps: WorkflowStep[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkflowExecutionLog {
+  id: string;
+  stepId: string;
+  stepType: string;
+  status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'SKIPPED';
+  input?: any;
+  output?: any;
+  error?: string;
+  startedAt: string;
+  completedAt?: string;
+}
+
+export interface WorkflowExecution {
+  id: string;
+  workflowId: string;
+  contactId?: string;
+  triggerEntityType?: string;
+  triggerEntityId?: string;
+  status: 'RUNNING' | 'COMPLETED' | 'FAILED' | 'PAUSED';
+  currentStep: number;
+  context: Record<string, any>;
+  logs: WorkflowExecutionLog[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateWorkflowParams {
+  name: string;
+  description?: string;
+  triggerType: string;
+  triggerConfig?: Record<string, any>;
+  steps?: Omit<WorkflowStep, 'id' | 'createdAt' | 'updatedAt'>[];
+  aiGenerated?: boolean;
 }

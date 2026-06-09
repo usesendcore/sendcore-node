@@ -1,176 +1,301 @@
-/** Configuration for the SendCore client */
 interface SendCoreConfig {
-    /** Your API key from the SendCore dashboard */
     apiKey: string;
-    /** Base URL of the SendCore API (default: https://api.usesendcore.com) */
     baseUrl?: string;
-    /** Request timeout in milliseconds (default: 30000) */
     timeout?: number;
-    /** Number of automatic retries on 5xx errors (default: 2) */
     retries?: number;
 }
 interface EmailAttachment {
-    /** Filename of the attachment */
     filename: string;
-    /** Base64-encoded content of the file */
     content: string;
-    /** MIME content type (e.g. 'application/pdf') */
     contentType?: string;
 }
 interface SendEmailParams {
-    /** Sender address (e.g. 'John <john@example.com>') */
     from: string;
-    /** One or more recipient email addresses */
     to: string | string[];
-    /** Email subject line */
     subject?: string;
-    /** HTML body of the email */
     html?: string;
-    /** Plain text body of the email */
     text?: string;
-    /** CC recipients */
     cc?: string | string[];
-    /** BCC recipients */
     bcc?: string | string[];
-    /** Reply-to addresses */
     replyTo?: string | string[];
-    /** Use a pre-built template by its ID */
     templateId?: string;
-    /** Variables to inject into the template */
     templateData?: Record<string, any>;
-    /** File attachments */
     attachments?: EmailAttachment[];
-    /** Custom tags for tracking and analytics */
     tags?: Record<string, string>;
 }
 interface SendEmailResponse {
     id: string;
-    message: string;
-    [key: string]: any;
+    status: string;
 }
 interface SubscribeParams {
-    /** Email address of the contact */
     email: string;
-    /** First name */
     firstName?: string;
-    /** Last name */
     lastName?: string;
-    /** ID of the audience list to add the contact to */
     listId?: string;
-    /** Any additional custom data */
     customData?: Record<string, any>;
 }
 interface UnsubscribeParams {
-    /** Email address to unsubscribe */
     email: string;
 }
 interface SendCoreErrorDetail {
     statusCode: number;
     message: string;
     error?: string;
-    [key: string]: any;
+}
+interface AddDomainParams {
+    name: string;
+}
+interface Domain {
+    id: string;
+    name: string;
+    status: 'PENDING' | 'VERIFIED' | 'FAILED';
+    spfStatus: boolean;
+    dkimStatus: boolean;
+    dmarcStatus: boolean;
+    verificationToken: string | null;
+    createdAt: string;
+    updatedAt: string;
+}
+interface DnsRecord {
+    type: string;
+    name: string;
+    value: string;
+    priority?: number;
+}
+interface VerifyEmailParams {
+    email: string;
+}
+interface VerificationResult {
+    email: string;
+    isValid: boolean;
+    score: number;
+    reason: string;
+}
+interface BatchVerifyParams {
+    emails: string[];
+}
+interface AnalyticsParams {
+    days?: number;
+}
+interface AnalyticsData {
+    data: any[];
+}
+interface WebhookPayload {
+    event: string;
+    data: Record<string, any>;
+    timestamp: number;
+}
+interface EmailBuilderParams {
+    from?: string;
+    to?: string | string[];
+    subject?: string;
+    html?: string;
+    text?: string;
+    cc?: string | string[];
+    bcc?: string | string[];
+    replyTo?: string | string[];
+    attachments?: EmailAttachment[];
+    tags?: Record<string, string>;
+}
+interface WorkflowStepConfig {
+    to?: string;
+    from?: string;
+    subject?: string;
+    html?: string;
+    templateSlug?: string;
+    templateData?: Record<string, any>;
+    duration?: number;
+    unit?: string;
+    field?: string;
+    operator?: string;
+    value?: string;
+    prompt?: string;
+    listId?: string;
+    fields?: Record<string, any>;
+    url?: string;
+    body?: Record<string, any>;
+}
+interface WorkflowStep {
+    id: string;
+    order: number;
+    type: string;
+    config: WorkflowStepConfig;
+    label?: string;
+    parentStepId?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+interface Workflow {
+    id: string;
+    name: string;
+    description?: string;
+    triggerType: string;
+    triggerConfig: Record<string, any>;
+    status: 'DRAFT' | 'ACTIVE' | 'PAUSED';
+    aiGenerated: boolean;
+    executionCount: number;
+    steps: WorkflowStep[];
+    createdAt: string;
+    updatedAt: string;
+}
+interface WorkflowExecutionLog {
+    id: string;
+    stepId: string;
+    stepType: string;
+    status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'SKIPPED';
+    input?: any;
+    output?: any;
+    error?: string;
+    startedAt: string;
+    completedAt?: string;
+}
+interface WorkflowExecution {
+    id: string;
+    workflowId: string;
+    contactId?: string;
+    triggerEntityType?: string;
+    triggerEntityId?: string;
+    status: 'RUNNING' | 'COMPLETED' | 'FAILED' | 'PAUSED';
+    currentStep: number;
+    context: Record<string, any>;
+    logs: WorkflowExecutionLog[];
+    createdAt: string;
+    updatedAt: string;
+}
+interface CreateWorkflowParams {
+    name: string;
+    description?: string;
+    triggerType: string;
+    triggerConfig?: Record<string, any>;
+    steps?: Omit<WorkflowStep, 'id' | 'createdAt' | 'updatedAt'>[];
+    aiGenerated?: boolean;
 }
 
-/**
- * SendCore — Official Node.js SDK
- *
- * @example
- * ```ts
- * import { SendCore } from 'sendcore';
- *
- * const sendcore = new SendCore('sc_live_xxxxxxxxxx');
- *
- * await sendcore.emails.send({
- *   from: 'hello@yourdomain.com',
- *   to: 'user@example.com',
- *   subject: 'Welcome!',
- *   html: '<h1>Hello World</h1>',
- * });
- * ```
- */
 declare class SendCore {
     private readonly apiKey;
     private readonly baseUrl;
     private readonly timeout;
     private readonly retries;
-    /** Email operations */
     readonly emails: EmailsResource;
-    /** Audience / contact operations */
     readonly contacts: ContactsResource;
+    readonly domains: DomainsResource;
+    readonly verify: EmailVerificationResource;
+    readonly analytics: AnalyticsResource;
+    readonly webhooks: WebhooksResource;
+    readonly workflows: WorkflowsResource;
     constructor(apiKeyOrConfig: string | SendCoreConfig);
-    /** @internal */
-    _request<T = any>(method: 'GET' | 'POST' | 'PUT' | 'DELETE', path: string, body?: Record<string, any>): Promise<T>;
+    _request<T = any>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: Record<string, any>): Promise<T>;
 }
 declare class EmailsResource {
     private readonly client;
     constructor(client: SendCore);
-    /**
-     * Send an email.
-     *
-     * @example
-     * ```ts
-     * const result = await sendcore.emails.send({
-     *   from: 'hello@yourdomain.com',
-     *   to: 'user@example.com',
-     *   subject: 'Hello!',
-     *   html: '<h1>Welcome</h1>',
-     * });
-     * ```
-     */
     send(params: SendEmailParams): Promise<SendEmailResponse>;
-    /**
-     * Send an email using a pre-built template.
-     *
-     * @example
-     * ```ts
-     * await sendcore.emails.sendTemplate({
-     *   from: 'hello@yourdomain.com',
-     *   to: 'user@example.com',
-     *   templateId: 'welcome-email',
-     *   templateData: { name: 'John', plan: 'Pro' },
-     * });
-     * ```
-     */
     sendTemplate(params: Omit<SendEmailParams, 'html' | 'text'> & {
         templateId: string;
         templateData?: Record<string, any>;
     }): Promise<SendEmailResponse>;
+    compose(): EmailBuilder;
 }
 declare class ContactsResource {
     private readonly client;
     constructor(client: SendCore);
-    /**
-     * Subscribe a contact (add to your audience).
-     *
-     * @example
-     * ```ts
-     * await sendcore.contacts.subscribe({
-     *   email: 'user@example.com',
-     *   firstName: 'John',
-     *   listId: 'lst_abc123',
-     * });
-     * ```
-     */
     subscribe(params: SubscribeParams): Promise<any>;
-    /**
-     * Unsubscribe a contact from your audience.
-     *
-     * @example
-     * ```ts
-     * await sendcore.contacts.unsubscribe({ email: 'user@example.com' });
-     * ```
-     */
     unsubscribe(params: UnsubscribeParams): Promise<any>;
 }
+declare class EmailBuilder {
+    private readonly resource;
+    private params;
+    constructor(resource: EmailsResource);
+    from(from: string): this;
+    to(to: string | string[]): this;
+    subject(subject: string): this;
+    html(html: string): this;
+    text(text: string): this;
+    cc(cc: string | string[]): this;
+    bcc(bcc: string | string[]): this;
+    replyTo(replyTo: string | string[]): this;
+    attach(filename: string, content: string, contentType?: string): this;
+    tag(key: string, value: string): this;
+    send(): Promise<SendEmailResponse>;
+}
+declare class DomainsResource {
+    private readonly client;
+    constructor(client: SendCore);
+    list(): Promise<Domain[]>;
+    add(params: AddDomainParams): Promise<Domain>;
+    remove(id: string): Promise<void>;
+    verify(id: string): Promise<Domain>;
+    getDnsRecords(id: string): Promise<DnsRecord[]>;
+    getHealth(id: string): Promise<{
+        spf: boolean;
+        dkim: boolean;
+        dmarc: boolean;
+        score: number;
+    }>;
+}
+declare class EmailVerificationResource {
+    private readonly client;
+    constructor(client: SendCore);
+    email(params: VerifyEmailParams): Promise<VerificationResult>;
+    batch(params: BatchVerifyParams): Promise<VerificationResult[]>;
+}
+declare class AnalyticsResource {
+    private readonly client;
+    constructor(client: SendCore);
+    get(params?: AnalyticsParams): Promise<AnalyticsData>;
+    stats(): Promise<any>;
+}
+declare class WebhooksResource {
+    verifySignature(payload: string, signature: string, secret: string): boolean;
+    verify(payload: WebhookPayload, signature: string, secret: string): boolean;
+}
+declare class WorkflowsResource {
+    private readonly client;
+    constructor(client: SendCore);
+    list(): Promise<any[]>;
+    get(id: string): Promise<any>;
+    create(params: {
+        name: string;
+        description?: string;
+        triggerType: string;
+        triggerConfig?: any;
+        steps?: any[];
+    }): Promise<any>;
+    update(id: string, params: {
+        name?: string;
+        description?: string;
+        triggerType?: string;
+        triggerConfig?: any;
+    }): Promise<any>;
+    delete(id: string): Promise<void>;
+    activate(id: string): Promise<any>;
+    pause(id: string): Promise<any>;
+    addStep(workflowId: string, params: {
+        type: string;
+        config: any;
+        label?: string;
+        order?: number;
+    }): Promise<any>;
+    updateStep(stepId: string, params: {
+        type?: string;
+        config?: any;
+        label?: string;
+    }): Promise<any>;
+    deleteStep(stepId: string): Promise<void>;
+    getExecutions(workflowId: string): Promise<any[]>;
+    getExecution(executionId: string): Promise<any>;
+    test(workflowId: string, contactId?: string): Promise<any>;
+    aiGenerate(prompt: string): Promise<any>;
+}
 
-/**
- * Custom error class for SendCore API errors.
- * Contains the HTTP status code and structured error detail from the server.
- */
 declare class SendCoreError extends Error {
     readonly statusCode: number;
     readonly detail: SendCoreErrorDetail;
     constructor(statusCode: number, detail: SendCoreErrorDetail);
+    get isRateLimited(): boolean;
+    get isUnauthorized(): boolean;
+    get isServerError(): boolean;
 }
+declare function isSendCoreError(err: unknown): err is SendCoreError;
 
-export { type EmailAttachment, SendCore, type SendCoreConfig, SendCoreError, type SendCoreErrorDetail, type SendEmailParams, type SendEmailResponse, type SubscribeParams, type UnsubscribeParams };
+export { type AddDomainParams, type AnalyticsData, type AnalyticsParams, type BatchVerifyParams, type CreateWorkflowParams, type DnsRecord, type Domain, type EmailAttachment, EmailBuilder, type EmailBuilderParams, SendCore, type SendCoreConfig, SendCoreError, type SendCoreErrorDetail, type SendEmailParams, type SendEmailResponse, type SubscribeParams, type UnsubscribeParams, type VerificationResult, type VerifyEmailParams, type WebhookPayload, type Workflow, type WorkflowExecution, type WorkflowExecutionLog, type WorkflowStep, isSendCoreError };

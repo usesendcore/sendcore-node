@@ -1,10 +1,6 @@
-// ─────────────────────────────────────────────
-// SendCore Node.js SDK
-// Official SDK for the SendCore email platform
-// ─────────────────────────────────────────────
-
 export { SendCore } from './client';
-export { SendCoreError } from './errors';
+export { SendCoreError, isSendCoreError } from './errors';
+export { EmailBuilder } from './client';
 export type {
   SendCoreConfig,
   SendEmailParams,
@@ -12,5 +8,20 @@ export type {
   EmailAttachment,
   SubscribeParams,
   UnsubscribeParams,
+  AddDomainParams,
+  Domain,
+  DnsRecord,
+  VerifyEmailParams,
+  BatchVerifyParams,
+  VerificationResult,
+  AnalyticsParams,
+  AnalyticsData,
+  WebhookPayload,
+  EmailBuilderParams,
   SendCoreErrorDetail,
+  Workflow,
+  WorkflowStep,
+  WorkflowExecution,
+  WorkflowExecutionLog,
+  CreateWorkflowParams,
 } from './types';
