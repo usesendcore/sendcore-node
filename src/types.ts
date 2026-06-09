@@ -194,3 +194,121 @@ export interface CreateWorkflowParams {
   steps?: Omit<WorkflowStep, 'id' | 'createdAt' | 'updatedAt'>[];
   aiGenerated?: boolean;
 }
+
+// ─── Broadcast / Campaign Types ──────────────
+
+export interface Broadcast {
+  id: string;
+  name: string;
+  subject?: string;
+  content?: string;
+  status: 'DRAFT' | 'SCHEDULED' | 'SENDING' | 'SENT' | 'FAILED';
+  listIds?: string[];
+  scheduledAt?: string;
+  sentCount?: number;
+  openCount?: number;
+  clickCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateBroadcastParams {
+  name: string;
+  subject?: string;
+  content?: string;
+  listIds?: string[];
+}
+
+export interface ScheduleBroadcastParams {
+  scheduledAt: string;
+}
+
+// ─── Audience List Types ──────────────────────
+
+export interface AudienceList {
+  id: string;
+  name: string;
+  description?: string;
+  contactCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAudienceListParams {
+  name: string;
+  description?: string;
+}
+
+export interface AddContactParams {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  listIds?: string[];
+  customData?: Record<string, any>;
+}
+
+// ─── Template Types ───────────────────────────
+
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject?: string;
+  html?: string;
+  text?: string;
+  design?: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTemplateParams {
+  name: string;
+  subject?: string;
+  html?: string;
+  text?: string;
+  design?: Record<string, any>;
+}
+
+// ─── Suppression Types ────────────────────────
+
+export interface Suppression {
+  id: string;
+  email: string;
+  reason?: string;
+  createdAt: string;
+}
+
+export interface AddSuppressionParams {
+  email: string;
+  reason?: string;
+}
+
+export interface SuppressionListParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+// ─── API Key Types ────────────────────────────
+
+export interface ApiKey {
+  id: string;
+  name: string;
+  prefix: string;
+  scopes: string[];
+  createdAt: string;
+  expiresAt?: string;
+}
+
+export interface CreateApiKeyParams {
+  name: string;
+  scopes?: string[];
+  expiresInDays?: number;
+}
+
+export interface CreateApiKeyResponse {
+  id: string;
+  name: string;
+  key: string;
+  scopes: string[];
+  createdAt: string;
+}

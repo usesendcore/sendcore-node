@@ -6,6 +6,11 @@ import type {
   AnalyticsParams, AnalyticsData,
   WebhookPayload,
   EmailBuilderParams,
+  Broadcast, CreateBroadcastParams, ScheduleBroadcastParams,
+  AudienceList, CreateAudienceListParams, AddContactParams,
+  EmailTemplate, CreateTemplateParams,
+  Suppression, AddSuppressionParams, SuppressionListParams,
+  ApiKey, CreateApiKeyParams, CreateApiKeyResponse,
 } from './types';
 import { SendCoreError } from './errors';
 
@@ -28,6 +33,11 @@ export class SendCore {
   readonly analytics: AnalyticsResource;
   readonly webhooks: WebhooksResource;
   readonly workflows: WorkflowsResource;
+  readonly broadcasts: BroadcastsResource;
+  readonly audienceLists: AudienceListsResource;
+  readonly templates: TemplatesResource;
+  readonly suppressions: SuppressionsResource;
+  readonly apiKeys: ApiKeysResource;
 
   constructor(apiKeyOrConfig: string | SendCoreConfig) {
     const config: SendCoreConfig =
@@ -53,6 +63,11 @@ export class SendCore {
     this.analytics = new AnalyticsResource(this);
     this.webhooks = new WebhooksResource();
     this.workflows = new WorkflowsResource(this);
+    this.broadcasts = new BroadcastsResource(this);
+    this.audienceLists = new AudienceListsResource(this);
+    this.templates = new TemplatesResource(this);
+    this.suppressions = new SuppressionsResource(this);
+    this.apiKeys = new ApiKeysResource(this);
   }
 
   async _request<T = any>(
@@ -354,6 +369,142 @@ class WorkflowsResource {
 
   async aiGenerate(prompt: string): Promise<any> {
     return this.client._request<any>('POST', '/organizations/workflows/ai/generate', { prompt });
+  }
+}
+
+// ─── Broadcasts / Campaigns Resource ──────────
+
+class BroadcastsResource {
+  constructor(private readonly client: SendCore) {}
+
+  async list(): Promise<Broadcast[]> {
+    return this.client._request<Broadcast[]>('GET', '/organizations/broadcasts');
+  }
+
+  async get(id: string): Promise<Broadcast> {
+    return this.client._request<Broadcast>('GET', `/organizations/broadcasts/${id}`);
+  }
+
+  async create(params: CreateBroadcastParams): Promise<Broadcast> {
+    return this.client._request<Broadcast>('POST', '/organizations/broadcasts', params);
+  }
+
+  async update(id: string, params: Partial<CreateBroadcastParams>): Promise<Broadcast> {
+    return this.client._request<Broadcast>('PUT', `/organizations/broadcasts/${id}`, params);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.client._request('DELETE', `/organizations/broadcasts/${id}`);
+  }
+
+  async send(id: string): Promise<Broadcast> {
+    return this.client._request<Broadcast>('POST', `/organizations/broadcasts/${id}/send`);
+  }
+
+  async schedule(id: string, params: ScheduleBroadcastParams): Promise<Broadcast> {
+    return this.client._request<Broadcast>('POST', `/organizations/broadcasts/${id}/schedule`, params);
+  }
+}
+
+// ─── Audience Lists Resource ─────────────────
+
+class AudienceListsResource {
+  constructor(private readonly client: SendCore) {}
+
+  async list(): Promise<AudienceList[]> {
+    return this.client._request<AudienceList[]>('GET', '/organizations/audience/lists');
+  }
+
+  async create(params: CreateAudienceListParams): Promise<AudienceList> {
+    return this.client._request<AudienceList>('POST', '/organizations/audience/lists', params);
+  }
+
+  async update(id: string, params: Partial<CreateAudienceListParams>): Promise<AudienceList> {
+    return this.client._request<AudienceList>('PUT', `/organizations/audience/lists/${id}`, params);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.client._request('DELETE', `/organizations/audience/lists/${id}`);
+  }
+
+  async addContact(params: AddContactParams): Promise<any> {
+    return this.client._request('POST', '/organizations/audience/contacts', params);
+  }
+
+  async listContacts(listId?: string): Promise<any[]> {
+    const query = listId ? `?listId=${listId}` : '';
+    return this.client._request<any[]>('GET', `/organizations/audience/contacts${query}`);
+  }
+}
+
+// ─── Templates Resource ──────────────────────
+
+class TemplatesResource {
+  constructor(private readonly client: SendCore) {}
+
+  async list(): Promise<EmailTemplate[]> {
+    return this.client._request<EmailTemplate[]>('GET', '/organizations/templates');
+  }
+
+  async get(id: string): Promise<EmailTemplate> {
+    return this.client._request<EmailTemplate>('GET', `/organizations/templates/${id}`);
+  }
+
+  async create(params: CreateTemplateParams): Promise<EmailTemplate> {
+    return this.client._request<EmailTemplate>('POST', '/organizations/templates', params);
+  }
+
+  async update(id: string, params: Partial<CreateTemplateParams>): Promise<EmailTemplate> {
+    return this.client._request<EmailTemplate>('PUT', `/organizations/templates/${id}`, params);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.client._request('DELETE', `/organizations/templates/${id}`);
+  }
+}
+
+// ─── Suppressions Resource ───────────────────
+
+class SuppressionsResource {
+  constructor(private readonly client: SendCore) {}
+
+  async list(params?: SuppressionListParams): Promise<Suppression[]> {
+    const query = new URLSearchParams();
+    if (params?.page) query.set('page', String(params.page));
+    if (params?.limit) query.set('limit', String(params.limit));
+    if (params?.search) query.set('search', params.search);
+    const qs = query.toString();
+    return this.client._request<Suppression[]>('GET', `/organizations/suppressions${qs ? '?' + qs : ''}`);
+  }
+
+  async add(params: AddSuppressionParams): Promise<Suppression> {
+    return this.client._request<Suppression>('POST', '/organizations/suppressions', params);
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.client._request('DELETE', `/organizations/suppressions/${id}`);
+  }
+}
+
+// ─── API Keys Resource ───────────────────────
+
+class ApiKeysResource {
+  constructor(private readonly client: SendCore) {}
+
+  async list(): Promise<ApiKey[]> {
+    return this.client._request<ApiKey[]>('GET', '/organizations/api-keys');
+  }
+
+  async create(params: CreateApiKeyParams): Promise<CreateApiKeyResponse> {
+    return this.client._request<CreateApiKeyResponse>('POST', '/organizations/api-keys', params);
+  }
+
+  async createMcp(name: string): Promise<CreateApiKeyResponse> {
+    return this.client._request<CreateApiKeyResponse>('POST', '/organizations/api-keys/mcp', { name });
+  }
+
+  async revoke(id: string): Promise<void> {
+    await this.client._request('DELETE', `/organizations/api-keys/${id}`);
   }
 }
 
