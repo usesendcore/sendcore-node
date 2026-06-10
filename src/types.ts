@@ -312,3 +312,54 @@ export interface CreateApiKeyResponse {
   scopes: string[];
   createdAt: string;
 }
+
+// ─── Agent Inbox Types ─────────────────────────
+
+export interface AgentInbox {
+  id: string;
+  emailAddress: string;
+  displayName?: string;
+  webhookUrl?: string;
+  status: 'ACTIVE' | 'DISABLED';
+  metadata?: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAgentInboxParams {
+  displayName?: string;
+  webhookUrl?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface InboundEmail {
+  id: string;
+  inboxId: string;
+  fromAddress: string;
+  fromName?: string;
+  toAddress: string;
+  subject?: string;
+  bodyText?: string;
+  bodyHtml?: string;
+  parsedOtp?: string;
+  messageId?: string;
+  inReplyTo?: string;
+  references?: string;
+  isRead: boolean;
+  receivedAt: string;
+}
+
+export interface SendAsAgentParams {
+  to: string | string[];
+  subject: string;
+  body: string;
+  inReplyTo?: string;
+}
+
+export interface PaginatedEmails {
+  data: InboundEmail[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}

@@ -170,6 +170,100 @@ interface CreateWorkflowParams {
     steps?: Omit<WorkflowStep, 'id' | 'createdAt' | 'updatedAt'>[];
     aiGenerated?: boolean;
 }
+interface Broadcast {
+    id: string;
+    name: string;
+    subject?: string;
+    content?: string;
+    status: 'DRAFT' | 'SCHEDULED' | 'SENDING' | 'SENT' | 'FAILED';
+    listIds?: string[];
+    scheduledAt?: string;
+    sentCount?: number;
+    openCount?: number;
+    clickCount?: number;
+    createdAt: string;
+    updatedAt: string;
+}
+interface CreateBroadcastParams {
+    name: string;
+    subject?: string;
+    content?: string;
+    listIds?: string[];
+}
+interface ScheduleBroadcastParams {
+    scheduledAt: string;
+}
+interface AudienceList {
+    id: string;
+    name: string;
+    description?: string;
+    contactCount?: number;
+    createdAt: string;
+    updatedAt: string;
+}
+interface CreateAudienceListParams {
+    name: string;
+    description?: string;
+}
+interface AddContactParams {
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    listIds?: string[];
+    customData?: Record<string, any>;
+}
+interface EmailTemplate {
+    id: string;
+    name: string;
+    subject?: string;
+    html?: string;
+    text?: string;
+    design?: Record<string, any>;
+    createdAt: string;
+    updatedAt: string;
+}
+interface CreateTemplateParams {
+    name: string;
+    subject?: string;
+    html?: string;
+    text?: string;
+    design?: Record<string, any>;
+}
+interface Suppression {
+    id: string;
+    email: string;
+    reason?: string;
+    createdAt: string;
+}
+interface AddSuppressionParams {
+    email: string;
+    reason?: string;
+}
+interface SuppressionListParams {
+    page?: number;
+    limit?: number;
+    search?: string;
+}
+interface ApiKey {
+    id: string;
+    name: string;
+    prefix: string;
+    scopes: string[];
+    createdAt: string;
+    expiresAt?: string;
+}
+interface CreateApiKeyParams {
+    name: string;
+    scopes?: string[];
+    expiresInDays?: number;
+}
+interface CreateApiKeyResponse {
+    id: string;
+    name: string;
+    key: string;
+    scopes: string[];
+    createdAt: string;
+}
 
 declare class SendCore {
     private readonly apiKey;
@@ -183,6 +277,11 @@ declare class SendCore {
     readonly analytics: AnalyticsResource;
     readonly webhooks: WebhooksResource;
     readonly workflows: WorkflowsResource;
+    readonly broadcasts: BroadcastsResource;
+    readonly audienceLists: AudienceListsResource;
+    readonly templates: TemplatesResource;
+    readonly suppressions: SuppressionsResource;
+    readonly apiKeys: ApiKeysResource;
     constructor(apiKeyOrConfig: string | SendCoreConfig);
     _request<T = any>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: Record<string, any>): Promise<T>;
 }
@@ -287,6 +386,51 @@ declare class WorkflowsResource {
     test(workflowId: string, contactId?: string): Promise<any>;
     aiGenerate(prompt: string): Promise<any>;
 }
+declare class BroadcastsResource {
+    private readonly client;
+    constructor(client: SendCore);
+    list(): Promise<Broadcast[]>;
+    get(id: string): Promise<Broadcast>;
+    create(params: CreateBroadcastParams): Promise<Broadcast>;
+    update(id: string, params: Partial<CreateBroadcastParams>): Promise<Broadcast>;
+    delete(id: string): Promise<void>;
+    send(id: string): Promise<Broadcast>;
+    schedule(id: string, params: ScheduleBroadcastParams): Promise<Broadcast>;
+}
+declare class AudienceListsResource {
+    private readonly client;
+    constructor(client: SendCore);
+    list(): Promise<AudienceList[]>;
+    create(params: CreateAudienceListParams): Promise<AudienceList>;
+    update(id: string, params: Partial<CreateAudienceListParams>): Promise<AudienceList>;
+    delete(id: string): Promise<void>;
+    addContact(params: AddContactParams): Promise<any>;
+    listContacts(listId?: string): Promise<any[]>;
+}
+declare class TemplatesResource {
+    private readonly client;
+    constructor(client: SendCore);
+    list(): Promise<EmailTemplate[]>;
+    get(id: string): Promise<EmailTemplate>;
+    create(params: CreateTemplateParams): Promise<EmailTemplate>;
+    update(id: string, params: Partial<CreateTemplateParams>): Promise<EmailTemplate>;
+    delete(id: string): Promise<void>;
+}
+declare class SuppressionsResource {
+    private readonly client;
+    constructor(client: SendCore);
+    list(params?: SuppressionListParams): Promise<Suppression[]>;
+    add(params: AddSuppressionParams): Promise<Suppression>;
+    remove(id: string): Promise<void>;
+}
+declare class ApiKeysResource {
+    private readonly client;
+    constructor(client: SendCore);
+    list(): Promise<ApiKey[]>;
+    create(params: CreateApiKeyParams): Promise<CreateApiKeyResponse>;
+    createMcp(name: string): Promise<CreateApiKeyResponse>;
+    revoke(id: string): Promise<void>;
+}
 
 declare class SendCoreError extends Error {
     readonly statusCode: number;
@@ -298,4 +442,4 @@ declare class SendCoreError extends Error {
 }
 declare function isSendCoreError(err: unknown): err is SendCoreError;
 
-export { type AddDomainParams, type AnalyticsData, type AnalyticsParams, type BatchVerifyParams, type CreateWorkflowParams, type DnsRecord, type Domain, type EmailAttachment, EmailBuilder, type EmailBuilderParams, SendCore, type SendCoreConfig, SendCoreError, type SendCoreErrorDetail, type SendEmailParams, type SendEmailResponse, type SubscribeParams, type UnsubscribeParams, type VerificationResult, type VerifyEmailParams, type WebhookPayload, type Workflow, type WorkflowExecution, type WorkflowExecutionLog, type WorkflowStep, isSendCoreError };
+export { type AddContactParams, type AddDomainParams, type AddSuppressionParams, type AnalyticsData, type AnalyticsParams, type ApiKey, type AudienceList, type BatchVerifyParams, type Broadcast, type CreateApiKeyParams, type CreateApiKeyResponse, type CreateAudienceListParams, type CreateBroadcastParams, type CreateTemplateParams, type CreateWorkflowParams, type DnsRecord, type Domain, type EmailAttachment, EmailBuilder, type EmailBuilderParams, type EmailTemplate, type ScheduleBroadcastParams, SendCore, type SendCoreConfig, SendCoreError, type SendCoreErrorDetail, type SendEmailParams, type SendEmailResponse, type SubscribeParams, type Suppression, type SuppressionListParams, type UnsubscribeParams, type VerificationResult, type VerifyEmailParams, type WebhookPayload, type Workflow, type WorkflowExecution, type WorkflowExecutionLog, type WorkflowStep, isSendCoreError };

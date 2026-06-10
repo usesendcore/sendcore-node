@@ -11,6 +11,7 @@ import type {
   EmailTemplate, CreateTemplateParams,
   Suppression, AddSuppressionParams, SuppressionListParams,
   ApiKey, CreateApiKeyParams, CreateApiKeyResponse,
+  AgentInbox, CreateAgentInboxParams, InboundEmail, SendAsAgentParams, PaginatedEmails,
 } from './types';
 import { SendCoreError } from './errors';
 
@@ -38,6 +39,7 @@ export class SendCore {
   readonly templates: TemplatesResource;
   readonly suppressions: SuppressionsResource;
   readonly apiKeys: ApiKeysResource;
+  readonly agentInboxes: AgentInboxesResource;
 
   constructor(apiKeyOrConfig: string | SendCoreConfig) {
     const config: SendCoreConfig =
@@ -68,6 +70,7 @@ export class SendCore {
     this.templates = new TemplatesResource(this);
     this.suppressions = new SuppressionsResource(this);
     this.apiKeys = new ApiKeysResource(this);
+    this.agentInboxes = new AgentInboxesResource(this);
   }
 
   async _request<T = any>(
@@ -505,6 +508,56 @@ class ApiKeysResource {
 
   async revoke(id: string): Promise<void> {
     await this.client._request('DELETE', `/organizations/api-keys/${id}`);
+  }
+}
+
+// ─── Agent Inboxes Resource ────────────────
+
+class AgentInboxesResource {
+  constructor(private readonly client: SendCore) {}
+
+  async create(params: CreateAgentInboxParams): Promise<AgentInbox> {
+    return this.client._request<AgentInbox>('POST', '/agent-inboxes', params);
+  }
+
+  async list(): Promise<AgentInbox[]> {
+    return this.client._request<AgentInbox[]>('GET', '/agent-inboxes');
+  }
+
+  async get(id: string): Promise<AgentInbox> {
+    return this.client._request<AgentInbox>('GET', `/agent-inboxes/${id}`);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.client._request('DELETE', `/agent-inboxes/${id}`);
+  }
+
+  async setWebhook(id: string, url: string): Promise<AgentInbox> {
+    return this.client._request<AgentInbox>('PUT', `/agent-inboxes/${id}/webhook`, { url });
+  }
+
+  async getEmails(id: string, page?: number, limit?: number): Promise<PaginatedEmails> {
+    const params = new URLSearchParams();
+    if (page) params.set('page', String(page));
+    if (limit) params.set('limit', String(limit));
+    const qs = params.toString();
+    return this.client._request<PaginatedEmails>('GET', `/agent-inboxes/${id}/emails${qs ? '?' + qs : ''}`);
+  }
+
+  async getEmail(inboxId: string, emailId: string): Promise<InboundEmail> {
+    return this.client._request<InboundEmail>('GET', `/agent-inboxes/${inboxId}/emails/${emailId}`);
+  }
+
+  async markAsRead(inboxId: string, emailId: string): Promise<void> {
+    await this.client._request('PUT', `/agent-inboxes/${inboxId}/emails/${emailId}/read`);
+  }
+
+  async sendEmail(id: string, params: SendAsAgentParams): Promise<any> {
+    const payload = {
+      ...params,
+      to: Array.isArray(params.to) ? params.to : [params.to],
+    };
+    return this.client._request('POST', `/agent-inboxes/${id}/send`, payload);
   }
 }
 

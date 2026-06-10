@@ -38,4 +38,9 @@ export type {
   ApiKey,
   CreateApiKeyParams,
   CreateApiKeyResponse,
+  AgentInbox,
+  CreateAgentInboxParams,
+  InboundEmail,
+  SendAsAgentParams,
+  PaginatedEmails,
 } from './types';

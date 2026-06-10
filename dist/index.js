@@ -90,6 +90,11 @@ var SendCore = class {
   analytics;
   webhooks;
   workflows;
+  broadcasts;
+  audienceLists;
+  templates;
+  suppressions;
+  apiKeys;
   constructor(apiKeyOrConfig) {
     const config = typeof apiKeyOrConfig === "string" ? { apiKey: apiKeyOrConfig } : apiKeyOrConfig;
     if (!config.apiKey) {
@@ -108,6 +113,11 @@ var SendCore = class {
     this.analytics = new AnalyticsResource(this);
     this.webhooks = new WebhooksResource();
     this.workflows = new WorkflowsResource(this);
+    this.broadcasts = new BroadcastsResource(this);
+    this.audienceLists = new AudienceListsResource(this);
+    this.templates = new TemplatesResource(this);
+    this.suppressions = new SuppressionsResource(this);
+    this.apiKeys = new ApiKeysResource(this);
   }
   async _request(method, path, body) {
     const url = `${this.baseUrl}${path}`;
@@ -352,6 +362,117 @@ var WorkflowsResource = class {
   }
   async aiGenerate(prompt) {
     return this.client._request("POST", "/organizations/workflows/ai/generate", { prompt });
+  }
+};
+var BroadcastsResource = class {
+  constructor(client) {
+    this.client = client;
+  }
+  client;
+  async list() {
+    return this.client._request("GET", "/organizations/broadcasts");
+  }
+  async get(id) {
+    return this.client._request("GET", `/organizations/broadcasts/${id}`);
+  }
+  async create(params) {
+    return this.client._request("POST", "/organizations/broadcasts", params);
+  }
+  async update(id, params) {
+    return this.client._request("PUT", `/organizations/broadcasts/${id}`, params);
+  }
+  async delete(id) {
+    await this.client._request("DELETE", `/organizations/broadcasts/${id}`);
+  }
+  async send(id) {
+    return this.client._request("POST", `/organizations/broadcasts/${id}/send`);
+  }
+  async schedule(id, params) {
+    return this.client._request("POST", `/organizations/broadcasts/${id}/schedule`, params);
+  }
+};
+var AudienceListsResource = class {
+  constructor(client) {
+    this.client = client;
+  }
+  client;
+  async list() {
+    return this.client._request("GET", "/organizations/audience/lists");
+  }
+  async create(params) {
+    return this.client._request("POST", "/organizations/audience/lists", params);
+  }
+  async update(id, params) {
+    return this.client._request("PUT", `/organizations/audience/lists/${id}`, params);
+  }
+  async delete(id) {
+    await this.client._request("DELETE", `/organizations/audience/lists/${id}`);
+  }
+  async addContact(params) {
+    return this.client._request("POST", "/organizations/audience/contacts", params);
+  }
+  async listContacts(listId) {
+    const query = listId ? `?listId=${listId}` : "";
+    return this.client._request("GET", `/organizations/audience/contacts${query}`);
+  }
+};
+var TemplatesResource = class {
+  constructor(client) {
+    this.client = client;
+  }
+  client;
+  async list() {
+    return this.client._request("GET", "/organizations/templates");
+  }
+  async get(id) {
+    return this.client._request("GET", `/organizations/templates/${id}`);
+  }
+  async create(params) {
+    return this.client._request("POST", "/organizations/templates", params);
+  }
+  async update(id, params) {
+    return this.client._request("PUT", `/organizations/templates/${id}`, params);
+  }
+  async delete(id) {
+    await this.client._request("DELETE", `/organizations/templates/${id}`);
+  }
+};
+var SuppressionsResource = class {
+  constructor(client) {
+    this.client = client;
+  }
+  client;
+  async list(params) {
+    const query = new URLSearchParams();
+    if (params?.page) query.set("page", String(params.page));
+    if (params?.limit) query.set("limit", String(params.limit));
+    if (params?.search) query.set("search", params.search);
+    const qs = query.toString();
+    return this.client._request("GET", `/organizations/suppressions${qs ? "?" + qs : ""}`);
+  }
+  async add(params) {
+    return this.client._request("POST", "/organizations/suppressions", params);
+  }
+  async remove(id) {
+    await this.client._request("DELETE", `/organizations/suppressions/${id}`);
+  }
+};
+var ApiKeysResource = class {
+  constructor(client) {
+    this.client = client;
+  }
+  client;
+  async list() {
+    return this.client._request("GET", "/organizations/api-keys");
+  }
+  async create(params) {
+    return this.client._request("POST", "/organizations/api-keys", params);
+  }
+  async createMcp(name) {
+    return this.client._request("POST", "/organizations/api-keys/mcp", { name });
+  }
+  async revoke(id) {
+    await this.client._request("DELETE", `/organizations/api-keys/${id}`);
   }
 };
 // Annotate the CommonJS export names for ESM import in node:
