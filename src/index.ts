@@ -41,6 +41,9 @@ export type {
   AgentInbox,
   CreateAgentInboxParams,
   InboundEmail,
+  InboundThread,
+  InboundAttachment,
   SendAsAgentParams,
   PaginatedEmails,
+  PaginatedThreads,
 } from './types';

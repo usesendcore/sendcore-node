@@ -95,6 +95,7 @@ var SendCore = class {
   templates;
   suppressions;
   apiKeys;
+  agentInboxes;
   constructor(apiKeyOrConfig) {
     const config = typeof apiKeyOrConfig === "string" ? { apiKey: apiKeyOrConfig } : apiKeyOrConfig;
     if (!config.apiKey) {
@@ -118,6 +119,7 @@ var SendCore = class {
     this.templates = new TemplatesResource(this);
     this.suppressions = new SuppressionsResource(this);
     this.apiKeys = new ApiKeysResource(this);
+    this.agentInboxes = new AgentInboxesResource(this);
   }
   async _request(method, path, body) {
     const url = `${this.baseUrl}${path}`;
@@ -473,6 +475,47 @@ var ApiKeysResource = class {
   }
   async revoke(id) {
     await this.client._request("DELETE", `/organizations/api-keys/${id}`);
+  }
+};
+var AgentInboxesResource = class {
+  constructor(client) {
+    this.client = client;
+  }
+  client;
+  async create(params) {
+    return this.client._request("POST", "/agent-inboxes", params);
+  }
+  async list() {
+    return this.client._request("GET", "/agent-inboxes");
+  }
+  async get(id) {
+    return this.client._request("GET", `/agent-inboxes/${id}`);
+  }
+  async delete(id) {
+    await this.client._request("DELETE", `/agent-inboxes/${id}`);
+  }
+  async setWebhook(id, url) {
+    return this.client._request("PUT", `/agent-inboxes/${id}/webhook`, { url });
+  }
+  async getEmails(id, page, limit) {
+    const params = new URLSearchParams();
+    if (page) params.set("page", String(page));
+    if (limit) params.set("limit", String(limit));
+    const qs = params.toString();
+    return this.client._request("GET", `/agent-inboxes/${id}/emails${qs ? "?" + qs : ""}`);
+  }
+  async getEmail(inboxId, emailId) {
+    return this.client._request("GET", `/agent-inboxes/${inboxId}/emails/${emailId}`);
+  }
+  async markAsRead(inboxId, emailId) {
+    await this.client._request("PUT", `/agent-inboxes/${inboxId}/emails/${emailId}/read`);
+  }
+  async sendEmail(id, params) {
+    const payload = {
+      ...params,
+      to: Array.isArray(params.to) ? params.to : [params.to]
+    };
+    return this.client._request("POST", `/agent-inboxes/${id}/send`, payload);
   }
 };
 // Annotate the CommonJS export names for ESM import in node:

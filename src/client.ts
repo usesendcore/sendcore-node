@@ -11,7 +11,7 @@ import type {
   EmailTemplate, CreateTemplateParams,
   Suppression, AddSuppressionParams, SuppressionListParams,
   ApiKey, CreateApiKeyParams, CreateApiKeyResponse,
-  AgentInbox, CreateAgentInboxParams, InboundEmail, SendAsAgentParams, PaginatedEmails,
+  AgentInbox, CreateAgentInboxParams, InboundEmail, SendAsAgentParams, PaginatedEmails, PaginatedThreads,
 } from './types';
 import { SendCoreError } from './errors';
 
@@ -536,10 +536,11 @@ class AgentInboxesResource {
     return this.client._request<AgentInbox>('PUT', `/agent-inboxes/${id}/webhook`, { url });
   }
 
-  async getEmails(id: string, page?: number, limit?: number): Promise<PaginatedEmails> {
+  async getEmails(id: string, page?: number, limit?: number, search?: string): Promise<PaginatedEmails> {
     const params = new URLSearchParams();
     if (page) params.set('page', String(page));
     if (limit) params.set('limit', String(limit));
+    if (search) params.set('search', search);
     const qs = params.toString();
     return this.client._request<PaginatedEmails>('GET', `/agent-inboxes/${id}/emails${qs ? '?' + qs : ''}`);
   }
@@ -558,6 +559,26 @@ class AgentInboxesResource {
       to: Array.isArray(params.to) ? params.to : [params.to],
     };
     return this.client._request('POST', `/agent-inboxes/${id}/send`, payload);
+  }
+
+  async listThreads(inboxId: string, page?: number, limit?: number): Promise<PaginatedThreads> {
+    const params = new URLSearchParams();
+    if (page) params.set('page', String(page));
+    if (limit) params.set('limit', String(limit));
+    const qs = params.toString();
+    return this.client._request<PaginatedThreads>('GET', `/agent-inboxes/${inboxId}/threads${qs ? '?' + qs : ''}`);
+  }
+
+  async getThread(inboxId: string, threadId: string): Promise<any> {
+    return this.client._request<any>('GET', `/agent-inboxes/${inboxId}/threads/${threadId}`);
+  }
+
+  async getThreadByEmail(inboxId: string, emailId: string): Promise<any> {
+    return this.client._request<any>('GET', `/agent-inboxes/${inboxId}/emails/${emailId}/thread`);
+  }
+
+  async getAttachment(inboxId: string, emailId: string, attachmentId: string): Promise<any> {
+    return this.client._request<any>('GET', `/agent-inboxes/${inboxId}/emails/${emailId}/attachments/${attachmentId}`);
   }
 }
 

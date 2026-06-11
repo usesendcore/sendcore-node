@@ -264,6 +264,50 @@ interface CreateApiKeyResponse {
     scopes: string[];
     createdAt: string;
 }
+interface AgentInbox {
+    id: string;
+    emailAddress: string;
+    displayName?: string;
+    webhookUrl?: string;
+    status: 'ACTIVE' | 'DISABLED';
+    metadata?: Record<string, any>;
+    createdAt: string;
+    updatedAt: string;
+}
+interface CreateAgentInboxParams {
+    displayName?: string;
+    webhookUrl?: string;
+    metadata?: Record<string, any>;
+}
+interface InboundEmail {
+    id: string;
+    inboxId: string;
+    fromAddress: string;
+    fromName?: string;
+    toAddress: string;
+    subject?: string;
+    bodyText?: string;
+    bodyHtml?: string;
+    parsedOtp?: string;
+    messageId?: string;
+    inReplyTo?: string;
+    references?: string;
+    isRead: boolean;
+    receivedAt: string;
+}
+interface SendAsAgentParams {
+    to: string | string[];
+    subject: string;
+    body: string;
+    inReplyTo?: string;
+}
+interface PaginatedEmails {
+    data: InboundEmail[];
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+}
 
 declare class SendCore {
     private readonly apiKey;
@@ -282,6 +326,7 @@ declare class SendCore {
     readonly templates: TemplatesResource;
     readonly suppressions: SuppressionsResource;
     readonly apiKeys: ApiKeysResource;
+    readonly agentInboxes: AgentInboxesResource;
     constructor(apiKeyOrConfig: string | SendCoreConfig);
     _request<T = any>(method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: Record<string, any>): Promise<T>;
 }
@@ -431,6 +476,19 @@ declare class ApiKeysResource {
     createMcp(name: string): Promise<CreateApiKeyResponse>;
     revoke(id: string): Promise<void>;
 }
+declare class AgentInboxesResource {
+    private readonly client;
+    constructor(client: SendCore);
+    create(params: CreateAgentInboxParams): Promise<AgentInbox>;
+    list(): Promise<AgentInbox[]>;
+    get(id: string): Promise<AgentInbox>;
+    delete(id: string): Promise<void>;
+    setWebhook(id: string, url: string): Promise<AgentInbox>;
+    getEmails(id: string, page?: number, limit?: number): Promise<PaginatedEmails>;
+    getEmail(inboxId: string, emailId: string): Promise<InboundEmail>;
+    markAsRead(inboxId: string, emailId: string): Promise<void>;
+    sendEmail(id: string, params: SendAsAgentParams): Promise<any>;
+}
 
 declare class SendCoreError extends Error {
     readonly statusCode: number;
@@ -442,4 +500,4 @@ declare class SendCoreError extends Error {
 }
 declare function isSendCoreError(err: unknown): err is SendCoreError;
 
-export { type AddContactParams, type AddDomainParams, type AddSuppressionParams, type AnalyticsData, type AnalyticsParams, type ApiKey, type AudienceList, type BatchVerifyParams, type Broadcast, type CreateApiKeyParams, type CreateApiKeyResponse, type CreateAudienceListParams, type CreateBroadcastParams, type CreateTemplateParams, type CreateWorkflowParams, type DnsRecord, type Domain, type EmailAttachment, EmailBuilder, type EmailBuilderParams, type EmailTemplate, type ScheduleBroadcastParams, SendCore, type SendCoreConfig, SendCoreError, type SendCoreErrorDetail, type SendEmailParams, type SendEmailResponse, type SubscribeParams, type Suppression, type SuppressionListParams, type UnsubscribeParams, type VerificationResult, type VerifyEmailParams, type WebhookPayload, type Workflow, type WorkflowExecution, type WorkflowExecutionLog, type WorkflowStep, isSendCoreError };
+export { type AddContactParams, type AddDomainParams, type AddSuppressionParams, type AgentInbox, type AnalyticsData, type AnalyticsParams, type ApiKey, type AudienceList, type BatchVerifyParams, type Broadcast, type CreateAgentInboxParams, type CreateApiKeyParams, type CreateApiKeyResponse, type CreateAudienceListParams, type CreateBroadcastParams, type CreateTemplateParams, type CreateWorkflowParams, type DnsRecord, type Domain, type EmailAttachment, EmailBuilder, type EmailBuilderParams, type EmailTemplate, type InboundEmail, type PaginatedEmails, type ScheduleBroadcastParams, type SendAsAgentParams, SendCore, type SendCoreConfig, SendCoreError, type SendCoreErrorDetail, type SendEmailParams, type SendEmailResponse, type SubscribeParams, type Suppression, type SuppressionListParams, type UnsubscribeParams, type VerificationResult, type VerifyEmailParams, type WebhookPayload, type Workflow, type WorkflowExecution, type WorkflowExecutionLog, type WorkflowStep, isSendCoreError };

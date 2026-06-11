@@ -326,10 +326,30 @@ export interface AgentInbox {
   updatedAt: string;
 }
 
+export interface InboundThread {
+  id: string;
+  inboxId: string;
+  subject?: string;
+  emailCount: number;
+  lastSnippet?: string;
+  lastActivityAt: string;
+  isRead: boolean;
+}
+
+export interface PaginatedThreads {
+  data: InboundThread[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 export interface CreateAgentInboxParams {
   displayName?: string;
   webhookUrl?: string;
   metadata?: Record<string, any>;
+  domainId?: string;
+  localPrefix?: string;
 }
 
 export interface InboundEmail {
@@ -349,11 +369,19 @@ export interface InboundEmail {
   receivedAt: string;
 }
 
+export interface InboundAttachment {
+  id: string;
+  emailId: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+}
+
 export interface SendAsAgentParams {
   to: string | string[];
   subject: string;
   body: string;
-  inReplyTo?: string;
+  threadId?: string;
 }
 
 export interface PaginatedEmails {
